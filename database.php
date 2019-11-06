@@ -28,4 +28,5 @@ foreach($db_query as $row){
     echo '</div>';
 
 }
+//cokolwiek
 ?>
