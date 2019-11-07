@@ -1,7 +1,7 @@
 <?php 
 require_once('database.php');
 if(isset($_GET['send'])){
-    $send = 'a' .$_GET['send'];
+    $send = 'a' .$_GET['send']; //komentarz
     switch($send) {
         case 'ateacher':
             $data = [
