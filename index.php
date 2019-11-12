@@ -27,7 +27,8 @@
 
 <?php 
 require_once('database.php');
-if(isset($_GET['send'])){
+include('functions.php');
+if(isset($_GET['send'])) {
     $send = 'a' .$_GET['send']; //komentarz
     switch($send) {
         case 'ateacher':
@@ -36,12 +37,12 @@ if(isset($_GET['send'])){
                 'nazwisko' => $_POST['nazwisko'],
                 'pesel' => $_POST['pesel']
             ];
-            $db_conn = dbConnect($db_server,$db_user,$db_name,$db_pass);
-            $sql = 'insert into nauczyciele values (NULL, :imie, :nazwisko, :pesel)';
-            $db_stmt = $db_conn->prepare($sql);
-            $db_stmt->execute($data);
-            $db_conn = null;
-            header('Location: index.php');
+         //   $db_conn = dbConnect($db_server,$db_user,$db_name,$db_pass);
+         //   $sql = 'insert into nauczyciele values (NULL, :imie, :nazwisko, :pesel)';
+         //   $db_stmt = $db_conn->prepare($sql);
+         //   $db_stmt->execute($data);
+         //   $db_conn = null;
+         //   header('Location: index.php');
         break;
     }
 } else{
@@ -51,16 +52,32 @@ if(isset($_GET['cmd'])) {
     $cmd = 'c'.$_GET['cmd'];
     switch($cmd){
         case 'cupdate' :
-        $data = [
-            'id' => $_GET['id']
-        ];
-        $db_conn = dbConnect($db_server,$db_user,$db_name,$db_pass);
-            $sql = 'select imie,nazwisko,pesel from nauczyciele where id = :id';
-            $db_stmt = $db_conn->prepare($sql);
-            $db_stmt->execute($data);
-            $teacher = $db_stmt->fetchAll();
-            
-            $db_conn = null;
+        $method = $_SERVER['REQUEST_METHOD'];
+        if($method == 'POST') {
+            $data = [
+                'imie' => $_POST['imie'],
+                'nazwisko' => $_POST['nazwisko'],
+                'pesel' => $_POST['pesel'],
+                'id' => $_GET['id']
+            ];
+            $db_conn = dbConnect($db_server,$db_user,$db_name,$db_pass);
+            $sql = 'update nauczyciele set imie = :imie, nazwisko = :nazwisko, pesel = :pesel where id= :id';
+                $db_stmt = $db_conn->prepare($sql);
+                $db_stmt->execute($data);
+                $db_conn = null;
+                header('Location: index.php');
+
+        } else {
+            $data = [
+                'id' => $_GET['id']
+            ];
+            $db_conn = dbConnect($db_server,$db_user,$db_name,$db_pass);
+                $sql = 'select imie,nazwisko,pesel from nauczyciele where id = :id';
+                $db_stmt = $db_conn->prepare($sql);
+                $db_stmt->execute($data);
+                $teacher = $db_stmt->fetchAll();  
+                $db_conn = null;
+        }
         break;
         case 'cdelete';
         break;
@@ -79,10 +96,10 @@ if(isset($_GET['cmd'])) {
     <title>Document</title>
 </head>
 <body>
-<form action="index.php?send=teacher"  method= "post" name="addTeacher" id="addTeacher">
-    <input type="text" name="imie" value="<?php (isset($teacher[0]['imie'])) ? ($teacher[0]['imie']) : ('') ?>" id="">
-    <input type="text" name="nazwisko" value="<?php (isset($teacher[0]['nazwisko'])) ? ($teacher[0]['nazwisko']) : ('') ?>" id="">
-    <input type="text" name="pesel" id="">
+<form action="<?= (isset($_GET['cmd']) && $_GET['cmd'] == 'update') ? ('index.php?cmd=update&amp;id='.getNum($_GET['id'])) : ('index.php?send=teacher') ?>"  method="post" name="addTeacher" id="addTeacher">
+    <input type="text" name="imie" value="<?= (isset($teacher[0]['imie'])) ? ($teacher[0]['imie']) : ('') ?>" id="">
+    <input type="text" name="nazwisko" value="<?= (isset($teacher[0]['nazwisko'])) ? ($teacher[0]['nazwisko']) : ('') ?>" id="">
+    <input type="text" name="pesel" value="<?= (isset($teacher[0]['pesel'])) ? ($teacher[0]['pesel']) : ('') ?>" id="">
     <input type="submit" value ="zapisz">
 </form>
     <div class="list" id="nauczyciele">
